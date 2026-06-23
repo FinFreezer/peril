@@ -14,9 +14,16 @@ import (
 )
 
 func main() {
+	fmt.Println("Starting Peril server...")
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
-	fmt.Println("Starting Peril server...")
+	go func() {
+		<-c
+		fmt.Println()
+		fmt.Println("Peril server closed...")
+		os.Exit(0)
+	}()
+
 	connStr := "amqp://guest:guest@localhost:5672/"
 	amqpConn, err := amqp.Dial(connStr)
 	if err != nil {
@@ -27,7 +34,7 @@ func main() {
 
 	queueName := rt.GameLogSlug
 	routingKey := rt.GameLogSlug + "." + "*"
-	_, _, err = pb.DeclareAndBind(amqpConn, rt.ExchangePerilTopic, queueName, routingKey, pb.Durable)
+	err = pb.SubscribeGob(amqpConn, rt.ExchangePerilTopic, queueName, routingKey, pb.Durable, handlerWriteLogs())
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -38,6 +45,7 @@ func main() {
 		fmt.Println(err)
 		return
 	}
+	defer gameChann.Close()
 
 	exch := rt.ExchangePerilDirect
 	pauseKey := rt.PauseKey
@@ -69,8 +77,10 @@ serverLoop:
 		case "quit":
 			log.Println("Exiting server...")
 			break serverLoop
+		case "help":
+			lg.PrintServerHelp()
 		default:
-			log.Println("Uknown command.")
+			log.Println("Unknown command.")
 		}
 	}
 

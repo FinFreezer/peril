@@ -1,22 +1,14 @@
 package pubsub
 
 import (
-	"encoding/json"
+	"bytes"
+	"encoding/gob"
 	"fmt"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type AckType string
-
-const (
-	Ack         AckType = "Ack"         //.Ack(false)
-	NackRequeue AckType = "NackRequeue" //.Nack(false, true)
-	NackDiscard AckType = "NackDiscard" //.Nack(false, false)
-)
-
-func SubscribeJSON[T any](
-	conn *amqp.Connection,
+func SubscribeGob[T any](conn *amqp.Connection,
 	exchange,
 	queueName,
 	key string,
@@ -34,13 +26,15 @@ func SubscribeJSON[T any](
 	go func() {
 		defer amqpChan.Close()
 		for msg := range deliveryChan {
-			var bytes T
-			err := json.Unmarshal(msg.Body, &bytes)
+			data := bytes.NewBuffer(msg.Body)
+			var newBuf T
+			dec := gob.NewDecoder(data)
+			err := dec.Decode(&newBuf)
 			if err != nil {
 				fmt.Println(err)
 				return
 			}
-			ackType := handler(bytes)
+			ackType := handler(newBuf)
 			switch ackType {
 			case Ack:
 				fmt.Println("Calling Acknowledge")

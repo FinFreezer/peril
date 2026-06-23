@@ -18,6 +18,14 @@ func main() {
 	fmt.Println("Starting Peril client...")
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+
+	go func() {
+		<-c
+		fmt.Println()
+		fmt.Println("Peril client closed...")
+		os.Exit(0)
+	}()
+
 	connStr := "amqp://guest:guest@localhost:5672/"
 	amqpConn, err := amqp.Dial(connStr)
 	if err != nil {
@@ -44,7 +52,12 @@ func main() {
 		return
 	}
 	queueName = moveExchangeKey + usrName
-	err = pb.SubscribeJSON(amqpConn, rt.ExchangePerilTopic, queueName, moveExchangeKey+"*", pb.Transient, handlerArmyMove(newGame))
+	err = pb.SubscribeJSON(amqpConn, rt.ExchangePerilTopic, queueName, moveExchangeKey+"*", pb.Transient, handlerArmyMove(newGame, cliChann))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	err = pb.SubscribeJSON(amqpConn, rt.ExchangePerilTopic, "war", rt.WarRecognitionsPrefix+".*", pb.Durable, handlerConsumeWarMessage(newGame, cliChann))
 	if err != nil {
 		fmt.Println(err)
 		return
