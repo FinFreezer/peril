@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	h "github.com/bootdotdev/learn-pub-sub-starter/cmd/handlers"
 	lg "github.com/bootdotdev/learn-pub-sub-starter/internal/gamelogic"
 	pb "github.com/bootdotdev/learn-pub-sub-starter/internal/pubsub"
 	rt "github.com/bootdotdev/learn-pub-sub-starter/internal/routing"
@@ -34,7 +35,7 @@ func main() {
 
 	queueName := rt.GameLogSlug
 	routingKey := rt.GameLogSlug + "." + "*"
-	err = pb.SubscribeGob(amqpConn, rt.ExchangePerilTopic, queueName, routingKey, pb.Durable, handlerWriteLogs())
+	err = pb.SubscribeGob(amqpConn, rt.ExchangePerilTopic, queueName, routingKey, pb.Durable, h.HandlerWriteLogs())
 	if err != nil {
 		fmt.Println(err)
 		return

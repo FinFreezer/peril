@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"github.com/bootdotdev/learn-pub-sub-starter/internal/routing"
 )
 
-func handlerWriteLogs() func(newLog routing.GameLog) pb.AckType {
+func HandlerWriteLogs() func(newLog routing.GameLog) pb.AckType {
 	return func(newLog routing.GameLog) pb.AckType {
 		defer fmt.Print("> ")
 		err := gl.WriteLog(newLog)

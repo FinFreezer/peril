@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-func handlerConsumeWarMessage(gs *gamelogic.GameState, chn *amqp.Channel) func(row gamelogic.RecognitionOfWar) pb.AckType {
+func HandlerConsumeWarMessage(gs *gamelogic.GameState, chn *amqp.Channel) func(row gamelogic.RecognitionOfWar) pb.AckType {
 	return func(row gamelogic.RecognitionOfWar) pb.AckType {
 		defer fmt.Print("> ")
 

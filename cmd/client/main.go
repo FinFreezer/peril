@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
+	h "github.com/bootdotdev/learn-pub-sub-starter/cmd/handlers"
 	lg "github.com/bootdotdev/learn-pub-sub-starter/internal/gamelogic"
 	"github.com/bootdotdev/learn-pub-sub-starter/internal/pubsub"
 	pb "github.com/bootdotdev/learn-pub-sub-starter/internal/pubsub"
@@ -46,18 +48,18 @@ func main() {
 		return
 	}
 	queueName := rt.PauseKey + "." + usrName
-	err = pubsub.SubscribeJSON(amqpConn, rt.ExchangePerilDirect, queueName, rt.PauseKey, pb.Transient, handlerPause(newGame))
+	err = pubsub.SubscribeJSON(amqpConn, rt.ExchangePerilDirect, queueName, rt.PauseKey, pb.Transient, h.HandlerPause(newGame))
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	queueName = moveExchangeKey + usrName
-	err = pb.SubscribeJSON(amqpConn, rt.ExchangePerilTopic, queueName, moveExchangeKey+"*", pb.Transient, handlerArmyMove(newGame, cliChann))
+	err = pb.SubscribeJSON(amqpConn, rt.ExchangePerilTopic, queueName, moveExchangeKey+"*", pb.Transient, h.HandlerArmyMove(newGame, cliChann))
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	err = pb.SubscribeJSON(amqpConn, rt.ExchangePerilTopic, "war", rt.WarRecognitionsPrefix+".*", pb.Durable, handlerConsumeWarMessage(newGame, cliChann))
+	err = pb.SubscribeJSON(amqpConn, rt.ExchangePerilTopic, "war", rt.WarRecognitionsPrefix+".*", pb.Durable, h.HandlerConsumeWarMessage(newGame, cliChann))
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -95,7 +97,15 @@ gameLoop:
 		case "help":
 			lg.PrintClientHelp()
 		case "spam":
-			fmt.Println("Spamming not allowed yet!")
+			if len(cmds) < 2 {
+				break
+			}
+			spamAmt, err := strconv.Atoi(cmds[1])
+			if err != nil {
+				fmt.Println(err)
+				break
+			}
+			h.HelperSpamLogs(cliChann, rt.ExchangePerilTopic, rt.GameLogSlug+"."+usrName, usrName, spamAmt)
 		case "quit":
 			lg.PrintQuit()
 			break gameLoop

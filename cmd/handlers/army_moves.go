@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-func handlerArmyMove(gs *gamelogic.GameState, chn *amqp.Channel) func(st gamelogic.ArmyMove) pb.AckType {
+func HandlerArmyMove(gs *gamelogic.GameState, chn *amqp.Channel) func(st gamelogic.ArmyMove) pb.AckType {
 	return func(st gamelogic.ArmyMove) pb.AckType {
 		defer fmt.Print("> ")
 		mvOutcome := gs.HandleMove(st)

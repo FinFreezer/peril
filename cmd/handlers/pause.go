@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	routing "github.com/bootdotdev/learn-pub-sub-starter/internal/routing"
 )
 
-func handlerPause(gs *gamelogic.GameState) func(st routing.PlayingState) pb.AckType {
+func HandlerPause(gs *gamelogic.GameState) func(st routing.PlayingState) pb.AckType {
 	return func(st routing.PlayingState) pb.AckType {
 		defer fmt.Print("> ")
 		gs.HandlePause(st)
