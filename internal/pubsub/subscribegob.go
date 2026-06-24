@@ -19,6 +19,12 @@ func SubscribeGob[T any](conn *amqp.Connection,
 	if err != nil {
 		return err
 	}
+
+	err = amqpChan.Qos(10, 0, false)
+	if err != nil {
+		return err
+	}
+
 	deliveryChan, err := amqpChan.Consume(amqpQueue.Name, "", false, false, false, false, nil)
 	if err != nil {
 		return err

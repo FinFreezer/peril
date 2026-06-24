@@ -63,6 +63,9 @@ func main() {
 serverLoop:
 	for {
 		cmds := lg.GetInput()
+		if len(cmds) < 1 {
+			continue
+		}
 		switch cmds[0] {
 		case "pause":
 			log.Println("Sending pause message...")
